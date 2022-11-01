@@ -1,6 +1,11 @@
 from asyncio.windows_events import NULL
+import base64
+from email import message
+from msilib.schema import Binary, File
+from MongoDB.Message import Message
 from MongoDB.MongoDatabase import MongoDatabase
 from MongoDB.User import User
+from bson.objectid import ObjectId
 
 
 class UserFactoy:
@@ -21,7 +26,7 @@ class UserFactoy:
             self._user.set_photo(user_record['photo'])
 
     # create a new user and store in databse
-    def CreateUser(self, username, password, wallet_key, email, phone_number, key_length):
+    def createUser(self, username, password, wallet_key, email, phone_number, key_length):
         try:
             self._user = User(username, password, wallet_key,
                               email, phone_number, key_length)
@@ -51,7 +56,7 @@ class UserFactoy:
             return False
 
     # update the user's photo
-    def UpdatePhoto(self, username, photo) -> bool:
+    def updatePhoto(self, username, photo) -> bool:
         try:
             # update documents
             user_update = {
@@ -62,10 +67,43 @@ class UserFactoy:
         except Exception:
             return False
 
-    # change file into byte
-    def file_to_byte(file) -> bytes:
-        return NULL
+    # insert a new message
+    def insertMessage(self, message):
 
-    # change file into byte
-    def byte_to_file(file) -> bytes:
-        return NULL
+        # mql for creating new document in Message collection
+        new_message = {
+            "sender": message.get_sender,
+            "receiver": message.get_receiver,
+            "message_type": message.get_message_type,
+            "message": message.get_message,
+            "timestamp": message.get_timestamp,
+            "transport_type": message.get_transport_type
+        }
+        # run the mql on User collection
+        self._messages.insert_one(new_message)
+
+        post = self._messages.find_one(
+            {"sender": message.get_sender, "receiver": message.get_receiver, "timestamp": message.get_timestamp})
+        message_id = str(post['_id'])
+
+        # update user(receiver) message
+        user_message = {
+            "message":
+            {
+                "_id": ObjectId(message_id),
+            }
+        }
+        self._users.update_one({"username": message.get_receiver}, {
+                               "$push": user_message})
+
+    # change image into binary
+    def file_to_byte(file) -> Binary:
+        with open(file, 'rb') as fp:
+            bin = base64.b64encode(fp.read())
+        return bin
+
+    # change binary into image
+    def byte_to_file(bin, file):
+        image = base64.b64decode(bin)
+        with open(file, 'wb') as fp:
+            fp.write(image)

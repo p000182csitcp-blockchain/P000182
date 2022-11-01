@@ -7,10 +7,15 @@ from MongoDB.Message import Message
 class User:
 
     def encodeByHash(str) -> string:
-        return None
+        str_hash = hashlib.sha256(str.encode('utf-8')).hexdigest()
+        return str_hash
 
     def create_key_pairs_by_length(key_length) -> dict:
-        return None
+        # Use RSA to generate user key pairs
+        KeyPair = RSA.generate(bit=key_length)
+        private_key = KeyPair.exportkey("PEM")
+        public_key = KeyPair.publickey().exportKey("PEM")
+        return {"private_key": private_key, "public_key": public_key}
 
     def __init__(self, username, password, wallet_key, email, phone_number, key_length, photo=None) -> None:
         self._username = username
