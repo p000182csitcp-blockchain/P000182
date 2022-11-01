@@ -4,9 +4,13 @@ from pymongo import MongoClient
 
 
 class MongoDatabase:
-    # connect to MongoDB
-    client = MongoClient(
-        "mongodb+srv://P000182:VSDXjUNidZfXlCwD@p000182-cluster.tg3lsmb.mongodb.net/?retryWrites=true&w=majority")
+    try:
+        # connect to MongoDB
+        client = MongoClient(
+            "mongodb+srv://P000182:VSDXjUNidZfXlCwD@p000182-cluster.tg3lsmb.mongodb.net/?retryWrites=true&w=majority")
+        print(client.server_info())
+    except Exception:
+        print("Unable to connect to the server.")
 
     # get the database
     # input your database name
@@ -20,9 +24,9 @@ class MongoDatabase:
         return db.User  # input youe collection name
 
     # get the collection File(=table)
-    def getUser(self) -> Collection:
+    def getFile(self) -> Collection:
         return db.File  # input youe collection name
 
     # get the collection Message(=table)
-    def getUser(self) -> Collection:
+    def getMessage(self) -> Collection:
         return db.Message  # input youe collection name

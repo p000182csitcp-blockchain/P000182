@@ -1,16 +1,18 @@
 import string
 from click import password_option
 from MongoDB.KeyPairs import KeyPairs
+from MongoDB.Message import Message
 
 
 class User:
+
     def encodeByHash(str) -> string:
         return None
 
     def create_key_pairs_by_length(key_length) -> dict:
         return None
 
-    def __init__(self, username, password, wallet_key, email, phone_number, key_length, photo=None):
+    def __init__(self, username, password, wallet_key, email, phone_number, key_length, photo=None) -> None:
         self._username = username
         self._password = self.encodeByHash(password)
         self._phone_number = phone_number
@@ -19,6 +21,23 @@ class User:
         self._wallet_key = wallet_key
         self._keypairs = KeyPairs(self.create_key_pairs_by_length, key_length)
         self._message = []
+        self._private_key_location = ""
+
+    def __init__(self, username, password) -> None:
+        self._username = username
+        self._password = self.encodeByHash(password)
+
+    def get_private_key_locatione(self) -> list:
+        return self._private_key_location
+
+    def set_private_key_location(self, private_key_location) -> None:
+        self._private_key_location = private_key_location
+
+    def get_message(self) -> list:
+        return self._message
+
+    def set_message(self, message) -> None:
+        self._message = message
 
     def get_photo(self) -> bytes:
         return self._photo

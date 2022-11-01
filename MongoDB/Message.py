@@ -2,11 +2,12 @@ import string
 
 
 class Message:
-    def __init__(self, sender, receiver, message_type, message, transport_type) -> None:
+    def __init__(self, sender, receiver, message_type, message, timestamp, transport_type) -> None:
         self._sender = sender
         self._receiver = receiver
         self._message_type = message_type
         self._message = message
+        self._timestamp = timestamp
         self._transport_type = transport_type
 
     def get_transport_type(self) -> string:
@@ -14,6 +15,12 @@ class Message:
 
     def set_transport_type(self, transport_type) -> None:
         self._transport_type = transport_type
+
+    def get_timestamp(self):
+        return self._timestamp
+
+    def set_timestamp(self, timestamp) -> None:
+        self._timestamp = timestamp
 
     def get_message(self):
         return self._message
