@@ -5,6 +5,11 @@ client = MongoClient("mongodb+srv://P000182:VSDXjUNidZfXlCwD@p000182-cluster.tg3
 # get the database
 db = client.get_database('p00082csitcp_blockchain')  # input your database name
 
+# get the collection(=table)
+users = db.User  # input youe collection name
+files = db.File
+messages = db.Message
+
 # count document(=row)
 print(users.count_documents({}))
 
