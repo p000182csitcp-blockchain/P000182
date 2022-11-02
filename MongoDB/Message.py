@@ -1,22 +1,21 @@
-import datetime
+from datetime import datetime
 import string
-import time
 
 
 class Message:
-    def __init__(self, sender, receiver, message_type, message, transport_type) -> None:
+    def __init__(self, sender, receiver, message_type, message, delivery_type) -> None:
         self._sender = sender
         self._receiver = receiver
         self._message_type = message_type
         self._message = message
         self._timestamp = datetime.now()
-        self._transport_type = transport_type
+        self._delivery_type = delivery_type
 
-    def get_transport_type(self) -> string:
-        return self._transport_type
+    def get_delivery_type(self) -> string:
+        return self._delivery_type
 
-    def set_transport_type(self, transport_type) -> None:
-        self._transport_type = transport_type
+    def set_delivery_type(self, delivery_type) -> None:
+        self._delivery_type = delivery_type
 
     def get_timestamp(self):
         return self._timestamp

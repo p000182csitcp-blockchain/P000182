@@ -1,38 +1,53 @@
+import hashlib
 import string
-from click import password_option
-from MongoDB.KeyPairs import KeyPairs
-from MongoDB.Message import Message
+from Crypto.PublicKey import RSA
+from KeyPairs import KeyPairs
+from Message import Message
 
 
 class User:
 
-    def encodeByHash(str) -> string:
+    def encodeByHash(self, str) -> string:
+        str = "abc" + str
         str_hash = hashlib.sha256(str.encode('utf-8')).hexdigest()
         return str_hash
 
-    def create_key_pairs_by_length(key_length) -> dict:
+    # generate key pairs(y)
+    def create_key_pairs_by_length(self, key_length):
         # Use RSA to generate user key pairs
-        KeyPair = RSA.generate(bit=key_length)
-        private_key = KeyPair.exportkey("PEM")
-        public_key = KeyPair.publickey().exportKey("PEM")
+        KeyPair = RSA.generate(bits=key_length)
+
+        private_key = "file/private_key.pem"
+        with open(private_key, 'wb') as fpri:
+            fpri.write(KeyPair.exportKey("PEM"))
+            fpri.close()
+
+        public_key = "file/public_key.pem"
+        with open(public_key, 'wb') as fpub:
+            fpub.write(KeyPair.publickey().exportKey("PEM"))
+            fpub.close()
         return {"private_key": private_key, "public_key": public_key}
 
-    def __init__(self, username, password, wallet_key, email, phone_number, key_length, photo=None) -> None:
+    def new_keyPairs(self, key_length):
+        return KeyPairs(self.create_key_pairs_by_length(key_length), key_length)
+
+    # (y)
+    def __init__(self, username, password, wallet_key="", email="", phone_number="") -> None:
         self._username = username
         self._password = self.encodeByHash(password)
-        self._phone_number = phone_number
-        self._email = email
-        self._photo = photo
         self._wallet_key = wallet_key
-        self._keypairs = KeyPairs(self.create_key_pairs_by_length, key_length)
+        self._email = email
+        self._phone_number = phone_number
+        self._keypairs = None
+        self._photo = "file/DefaultPhoto.jpg"
         self._message = []
         self._private_key_location = ""
 
-    def __init__(self, username, password) -> None:
-        self._username = username
-        self._password = self.encodeByHash(password)
+    # def __init__(self, username, password) -> None:
+    #     self._username = username
+    #     self._password = self.encodeByHash(password)
 
-    def get_private_key_locatione(self) -> list:
+    def get_private_key_location(self) -> list:
         return self._private_key_location
 
     def set_private_key_location(self, private_key_location) -> None:

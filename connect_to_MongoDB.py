@@ -1,9 +1,7 @@
 import base64
 from datetime import datetime
-import time
 from bson import ObjectId
 from pymongo import MongoClient
-from gridfs import GridFS
 # connect to MongoDB
 client = MongoClient(
     "mongodb+srv://P000182:VSDXjUNidZfXlCwD@p000182-cluster.tg3lsmb.mongodb.net/?retryWrites=true&w=majority")
