@@ -213,7 +213,7 @@ class UserFactory:
     def get_user(self):
         return self._user
 
-    # clear the file
-    def clear_file_content(self, file):
+    # clean the file
+    def clean_file_content(self, file):
         with open(file, "a+", encoding="utf-8") as fp:
             fp.truncate(0)
