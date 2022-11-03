@@ -16,7 +16,14 @@ class UserFactory:
         self._messages = MongoDatabase().getMessage()
         self._user = None
 
+    # get file by file id(y)
+    def get_file_by_id(self, file_id):
+        post = self._files.find_one({"_id": ObjectId(file_id)})
+        self.byte_to_file(post["file"], post["file_name"])
+        return post["file_name"]
+
     # get User at sign in(y)
+
     def check_user(self, username, password) -> User:
         try:
             user_log = User(username, password)
@@ -142,7 +149,7 @@ class UserFactory:
             "message_type": message.get_message_type(),
             "message": message.get_message(),
             "timestamp": message.get_timestamp(),
-            "transport_type": message.get_delivery_type()
+            "delivery_type": message.get_delivery_type()
         }
         # run the mql on User collection
         self._messages.insert_one(new_message)
@@ -162,6 +169,28 @@ class UserFactory:
         }
         self._users.update_one({"username": message.get_receiver()}, {
                                "$push": user_message})
+
+        # if the message is a file
+        if (message.get_message_type() == "file"):
+
+            new_file = {
+                "message_id": ObjectId(message_id),
+                "file_type": message.get_message().split(".")[-1],
+                "file_name": message.get_message(),
+                "file": self.file_to_byte(message.get_message())
+            }
+
+            # insert a new file
+            self._files.insert_one(new_file)
+
+            # get the new file id
+            file_post = self._files.find_one(
+                {"message_id": ObjectId(message_id)})
+            file_id = str(file_post['_id'])
+
+            # update the message with file id
+            self._messages.update_one({"_id": ObjectId(message_id)}, {
+                "$set": {"message": ObjectId(file_id)}})
 
     # change file into binary(y)
     def file_to_byte(self, file):
