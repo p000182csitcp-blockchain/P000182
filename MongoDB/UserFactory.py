@@ -2,9 +2,10 @@ from asyncio.windows_events import NULL
 import base64
 from email import message
 from msilib.schema import Binary, File
-from Message import *
-from MongoDatabase import *
-from User import *
+import os
+from MongoDB.Message import *
+from MongoDB.MongoDatabase import *
+from MongoDB.User import *
 from bson.objectid import ObjectId
 
 
@@ -101,8 +102,8 @@ class UserFactory:
                 "phone_number": self._user.get_phone_number(),
                 "photo": self.file_to_byte(self._user.get_photo()),
                 "key_length": key_length,
-                "private_key": self.file_to_byte((self._user.get_keypairs().get_private_key())),
-                "public_key": self.file_to_byte((self._user.get_keypairs().get_public_key())),
+                "private_key": self.file_to_byte(self._user.get_keypairs().get_private_key()),
+                "public_key": self.file_to_byte(self._user.get_keypairs().get_public_key()),
                 "private_key_location": self._user.get_private_key_location(),
                 "message": []
             }
@@ -211,3 +212,8 @@ class UserFactory:
 
     def get_user(self):
         return self._user
+
+    # clear the file
+    def clear_file_content(self, file):
+        with open(file, "a+", encoding="utf-8") as fp:
+            fp.truncate(0)

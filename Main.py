@@ -1,13 +1,16 @@
-from User import *
-from MongoDatabase import *
+import os
+from MongoDB.User import *
+from MongoDB.MongoDatabase import *
 import base64
-from UserFactory import *
+from MongoDB.UserFactory import *
 from bson.objectid import ObjectId
+
+from deployment.Record import Record
 
 # test mongoDatabase.py #########################################################################################################################################
 mDb = MongoDatabase()
 
-# deployments = mDb.getDeployment()
+deployments = mDb.getDeployment()
 
 # # storage a new record on mongoDB
 # def new_record(file_name):
@@ -27,12 +30,18 @@ mDb = MongoDatabase()
 # get record from mongoDB
 
 
-# def get_record(file_name):
-#     bin = deployments.find_one({"file_name": file_name})["record"]
-#     record = base64.b64decode(bin)
-#     with open(file_name, 'wb') as fp:
-#         fp.write(record)
+# def get_record():
+#     mDb = MongoDatabase()
+#     deployments = mDb.getDeployment()
+#     deployment_records = deployments.find()
+#     for r in deployment_records:
+#         record = base64.b64decode(r["record"])
+#         file_name = "deployment/" + r["file_name"]
+#         with open(file_name, 'wb') as fp:
+#             fp.write(record)
 
+
+# Record().get_record()
 
 # # record's file name
 # file_name = "0xfffC35fBeE13B4ef21ed001475d935a7B28E422f.json"
@@ -60,21 +69,28 @@ userFact = UserFactory()
 # print(user.get_private_key_location())
 # print(user.get_photo())
 
-# userFact.create_user("YYGzzzzzzzzzz", "123", "11",
-#                      "bagoone@163.com", "0478639834", 1024)
-# user_creat = userFact.get_user()
-# print(user_creat.get_username())
-# print(user_creat.get_password())
-# print(user_creat.get_wallet_key())
-# print(user_creat.get_email())
-# print(user_creat.get_phone_number())
-# print(user_creat.get_keypairs().get_private_key())
-# print(user_creat.get_keypairs().get_public_key())
-# print(user_creat.get_message())
-# print(user_creat.get_private_key_location())
-# print(user_creat.get_photo())
+# if (userFact.is_exist_username("Shaohui Wang") != True):
 
-# user_check = userFact.check_user("YYGzzzzzzzzzz", "123")
+#     userFact.create_user("Shaohui Wang", "456", "123123",
+#                          "s3860973@student.rmit.edu.au", "3860973", 2048)
+#     user_creat = userFact.get_user()
+#     print(user_creat.get_username())
+#     print(user_creat.get_password())
+#     print(user_creat.get_wallet_key())
+#     print(user_creat.get_email())
+#     print(user_creat.get_phone_number())
+#     print(user_creat.get_keypairs().get_private_key())
+#     print(user_creat.get_keypairs().get_public_key())
+#     print(user_creat.get_message())
+#     print(user_creat.get_private_key_location())
+#     print(user_creat.get_photo())
+# else:
+#     print("The username is exist!")
+
+# path = "file/private_key.pem"
+# os.remove(path)
+
+# user_check = userFact.check_user("Shaohui Wang", "456")
 # print(user_check.get_username())
 # print(user_check.get_password())
 # print(user_check.get_wallet_key())
@@ -85,6 +101,11 @@ userFact = UserFactory()
 # print(user_check.get_message())
 # print(user_check.get_private_key_location())
 # print(user_check.get_photo())
+
+# with open("file/public_key.pem", "a+", encoding="utf-8") as test:
+#     test.truncate(0)
+
+# userFact.clear_file_content("file/public_key.pem")
 
 # print(userFact.is_exist_username("Yingying"))
 

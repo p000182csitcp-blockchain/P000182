@@ -1,8 +1,8 @@
 import hashlib
 import string
 from Crypto.PublicKey import RSA
-from KeyPairs import KeyPairs
-from Message import Message
+from MongoDB.KeyPairs import KeyPairs
+from MongoDB.Message import Message
 
 
 class User:
