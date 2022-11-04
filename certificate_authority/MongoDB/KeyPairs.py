@@ -17,3 +17,9 @@ class KeyPairs:
 
     def set_keypairs(self, keypairs) -> None:
         self._keypairs = keypairs
+
+    def get_private_key(self):
+        return self._keypairs["private_key"]
+
+    def get_public_key(self):
+        return self._keypairs["public_key"]
