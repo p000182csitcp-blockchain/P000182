@@ -1,6 +1,7 @@
 from deployment.Record import Record
 from MongoDB.UserFactory import UserFactory
 from MongoDB.Message import Message
+from MongoDB.MongoDatabase import *
 from datetime import datetime
 
 
@@ -9,8 +10,8 @@ def main():
     # filename = "build/deployments/5/"
     # Record().new_record(filename)
 
-    # # record download
-    # Record().get_record()
+    # record download
+    Record().get_record()
 
     # create a user factory
     userFact = UserFactory()
@@ -69,3 +70,9 @@ def main():
     #                   file, "SIGNED")
 
     # userFact.insert_message(message)
+
+    # get the collection(=table)
+    users = MongoDatabase().getUser()  # input youe collection name
+
+    # find documents
+    print(userFact.get_all_username())

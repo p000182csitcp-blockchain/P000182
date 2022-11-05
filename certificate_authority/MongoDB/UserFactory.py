@@ -24,6 +24,65 @@ class UserFactory:
         self.byte_to_file(post["file"], post["file_name"])
         return post["file_name"]
 
+    # get User by username
+    def check_user_by_username(self, username) -> User:
+        try:
+            pipeline = [
+                {
+                    "$match": {
+                        "username": username()
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": 'Message',
+                        "localField": 'message.message_id',
+                        "foreignField": '_id',
+                        "as": 'message'
+                    }
+                }
+            ]
+
+            user_record = self._users.aggregate(pipeline)
+
+            count = 0
+
+            for user_information in user_record:
+                count += 1
+                user_check = User(username, "11", user_information["wallet_key"],
+                                  user_information["email"], user_information["phone_number"])
+                user_check.set_userid(user_information["user_id"])
+                photo = "file/photo.jpg"
+                self.byte_to_file(user_information["photo"], photo)
+                user_check.set_photo(photo)
+                user_check.set_message(user_information["message"])
+                user_check.set_private_key_location(
+                    user_information["private_key_location"])
+
+                private_key = "file/private_key.pem"
+                self.byte_to_file(user_information["private_key"], private_key)
+
+                # get public key from blockchain
+                public_key = get_public_key(
+                    user_information["user_id"], user_information["wallet_key"])
+
+                keypairs = KeyPairs(
+                    {
+                        "private_key": private_key,
+                        "public_key": public_key
+                    },
+                    user_information["key_length"]
+                )
+                user_check.set_keypairs(keypairs)
+
+                self._user = user_check
+                return user_check
+            if (count == 0):
+                raise Exception("usename or password is wrong")
+        except Exception as e:
+            print(e.args)
+            return None
+
     # get User at sign in(y)
     def check_user(self, username, password) -> User:
         try:
@@ -66,7 +125,8 @@ class UserFactory:
                 self.byte_to_file(user_information["private_key"], private_key)
 
                 # get public key from blockchain
-                public_key = get_public_key(user_information["user_id"], user_information["wallet_key"])
+                public_key = get_public_key(
+                    user_information["user_id"], user_information["wallet_key"])
 
                 keypairs = KeyPairs(
                     {
@@ -226,5 +286,12 @@ class UserFactory:
     # get the wallet key
     def get_public_key(self, username):
         result = self._users.find_one({"username": username})
-
         return get_public_key(result["user_id"], result["wallet_key"])
+
+    # get all username
+    def get_all_username(self) -> list:
+        user_res = self._users.find()
+        user_list = []
+        for user in user_res:
+            user_list.append(user["username"])
+        return user_list
