@@ -7,6 +7,7 @@ from MongoDB.Message import *
 from MongoDB.MongoDatabase import *
 from MongoDB.User import *
 from bson.objectid import ObjectId
+from scripts.blockchainRetriver import *
 
 
 class UserFactory:
@@ -53,6 +54,7 @@ class UserFactory:
                 count += 1
                 user_check = User(username, password, user_information["wallet_key"],
                                   user_information["email"], user_information["phone_number"])
+                user_check.set_userid(user_information["user_id"])
                 photo = "file/photo.jpg"
                 self.byte_to_file(user_information["photo"], photo)
                 user_check.set_photo(photo)
@@ -63,8 +65,8 @@ class UserFactory:
                 private_key = "file/private_key.pem"
                 self.byte_to_file(user_information["private_key"], private_key)
 
-                public_key = "file/public_key.pem"
-                self.byte_to_file(user_information["public_key"], public_key)
+                # get public key from blockchain
+                public_key = get_public_key(user_information["user_id"], user_information["wallet_key"])
 
                 keypairs = KeyPairs(
                     {
@@ -89,11 +91,16 @@ class UserFactory:
 
             self._user = User(username, password, wallet_key,
                               email, phone_number)
+            # count document(=row)
+            user_count = self._users.count_documents({})
+
+            self._user.set_userid = (user_count + 1)
 
             self._user.set_keypairs(self._user.new_keyPairs(key_length))
 
             # mql for creating new document in User collection
             new_user = {
+                "user_id": self._user.get_userid(),
                 "username": self._user.get_username(),
                 "password": self._user.get_password(),
                 "wallet_key": self._user.get_wallet_key(),
@@ -102,7 +109,6 @@ class UserFactory:
                 "photo": self.file_to_byte(self._user.get_photo()),
                 "key_length": key_length,
                 "private_key": self.file_to_byte(self._user.get_keypairs().get_private_key()),
-                "public_key": self.file_to_byte(self._user.get_keypairs().get_public_key()),
                 "private_key_location": self._user.get_private_key_location(),
                 "message": []
             }
@@ -216,3 +222,9 @@ class UserFactory:
     def clean_file_content(self, file):
         with open(file, "a+", encoding="utf-8") as fp:
             fp.truncate(0)
+
+    # get the wallet key
+    def get_public_key(self, username):
+        result = self._users.find_one({"username": username})
+
+        return get_public_key(result["user_id"], result["wallet_key"])

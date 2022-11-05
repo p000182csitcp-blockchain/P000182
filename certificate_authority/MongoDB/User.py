@@ -22,10 +22,8 @@ class User:
             fpri.write(KeyPair.exportKey("PEM"))
             fpri.close()
 
-        public_key = "file/public_key.pem"
-        with open(public_key, 'wb') as fpub:
-            fpub.write(KeyPair.publickey().exportKey("PEM"))
-            fpub.close()
+        public_key = KeyPair.publickey().exportKey("PEM")
+        
         return {"private_key": private_key, "public_key": public_key}
 
     def new_keyPairs(self, key_length):
@@ -41,11 +39,18 @@ class User:
         self._keypairs = None
         self._photo = "file/DefaultPhoto.jpg"
         self._message = []
-        self._private_key_location = ""
+        self._private_key_location = "file/private_key.pem"
+        self._userid = 0
 
     # def __init__(self, username, password) -> None:
     #     self._username = username
     #     self._password = self.encodeByHash(password)
+
+    def get_userid(self):
+        return self._userid
+
+    def set_userid(self, userid):
+        self._userid = userid
 
     def get_private_key_location(self) -> list:
         return self._private_key_location
