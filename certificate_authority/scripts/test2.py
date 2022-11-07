@@ -33,7 +33,7 @@ def main():
     # get account
     wallet_account = get_wallet_account(wallet_key5)
     # get the most recent contract deployed
-    certification = RSACertification[1]
+    certification = RSACertification[2]
     # show certificate information
     user_name = certification.getUserName({"from": wallet_account})
     public_key_bytes_array = certification.getPublicKey({"from": wallet_account})
@@ -50,7 +50,7 @@ def main():
     # get account
     wallet_account = get_wallet_account(wallet_key6)
     # get the most recent contract deployed
-    certification = RSACertification[0]
+    certification = RSACertification[1]
     # show certificate information
     user_name = certification.getUserName({"from": wallet_account})
     public_key_bytes_array = certification.getPublicKey({"from": wallet_account})

@@ -12,6 +12,8 @@ from MongoDB.UserFactory import *
 from MongoDB.User import *
 from scripts.deploy import create_certificate
 from deployment.Record import *
+from PyQt5.QtCore import QTimer
+import time
 
 
 class Init:
@@ -19,6 +21,35 @@ class Init:
         self._user = None
         self._user_factory = UserFactory()
         self._m_selected = None
+        self._ui_sendMsg = None
+        self._ui_checkMsg = None
+        self._ui_sendFile = None
+        self._prev_msg_count = 0
+
+    # refresh pages every 3 sec
+    def refreshPages(self):
+        self.refreshTimer()
+
+        username = self._user.get_username()
+        self._user = self._user_factory.check_user_by_username(username)
+        # get db msg list reatime
+        db_msg_list = self._user.get_message()
+        db_msg_count = len(db_msg_list)
+
+        # if updated, refresh pages
+        if db_msg_count != self._prev_msg_count:
+            # update prev msg count
+            self._prev_msg_count = db_msg_count
+            self.refreshSendMsg()
+            self.refreshSendFile()
+            self.refreshCheckMsg()
+
+    def refreshTimer(self):
+        # Repeating timer, calls random_pick over and over.
+        self.picktimer = QTimer()
+        self.picktimer.setInterval(500)
+        self.picktimer.timeout.connect(self.refreshPages)
+        self.picktimer.start()
 
     def start_ui(self):
         app = QApplication([])
@@ -40,18 +71,18 @@ class Init:
 
         # SendMsg page widget
         window_sendMsg = QMainWindow()
-        ui_sendMsg = Ui_Send_Message()
-        ui_sendMsg.setupUi(window_sendMsg)
+        self._ui_sendMsg = Ui_Send_Message()
+        self._ui_sendMsg.setupUi(window_sendMsg)
 
         # SendFile page widget
         window_sendFile = QMainWindow()
-        ui_sendFile = Ui_Send_File()
-        ui_sendFile.setupUi(window_sendFile)
+        self._ui_sendFile = Ui_Send_File()
+        self._ui_sendFile.setupUi(window_sendFile)
 
         # Check msg page widget
         window_checkMsg = QMainWindow()
-        ui_checkMsg = Ui_Check_Message()
-        ui_checkMsg.setupUi(window_checkMsg)
+        self._ui_checkMsg = Ui_Check_Message()
+        self._ui_checkMsg.setupUi(window_checkMsg)
 
         # Login to Sign up button event
         ui_login.pushButton_register.clicked.connect(
@@ -100,33 +131,35 @@ class Init:
 
         # Main page go to send message page
         ui_homepage.pushButton_Send_Message.clicked.connect(
-            lambda: {self.openSendMsg(ui_sendMsg), window_sendMsg.show()}
+            lambda: {window_sendMsg.show(), self.openSendMsg(), self.refreshPages()}
         )
 
         # Main page go to send file page
         ui_homepage.pushButton_Send_File.clicked.connect(
-            lambda: {self.openSendFile(ui_sendFile), window_sendFile.show()}
+            lambda: {window_sendFile.show(), self.openSendFile(), self.refreshPages()}
         )
 
         # Main page go to message list page
         ui_homepage.pushButton_Check_Message.clicked.connect(
-            lambda: {self.openCheckMsg(ui_checkMsg), window_checkMsg.show()}
+            lambda: {window_checkMsg.show(), self.openCheckMsg(), self.refreshPages()}
         )
 
         # send message page send button event
-        ui_sendMsg.pushButton_Send.clicked.connect(
+        self._ui_sendMsg.pushButton_Send.clicked.connect(
             lambda: {
                 self.sendMessage(
-                    ui_sendMsg.sendingRequest(), window_sendMsg, ui_sendMsg
+                    self._ui_sendMsg.sendingRequest(), window_sendMsg, self._ui_sendMsg
                 )
             }
         )
 
         # send file page send button event
-        ui_sendFile.pushButton_Send.clicked.connect(
+        self._ui_sendFile.pushButton_Send.clicked.connect(
             lambda: {
                 self.sendFile(
-                    ui_sendFile.sendingRequest(), window_sendFile, ui_sendFile
+                    self._ui_sendFile.sendingRequest(),
+                    window_sendFile,
+                    self._ui_sendFile,
                 )
             }
         )
@@ -137,6 +170,11 @@ class Init:
         user_name, password = login_info
         # login db
         self._user = self._user_factory.check_user(user_name, password)
+
+        # set prev msg count
+        db_msg_list = self._user.get_message()
+        self._prev_msg_count = len(db_msg_list)
+
         login_successful = False
         if self._user != None:
             login_successful = True
@@ -252,16 +290,17 @@ class Init:
             "image: url(" + self._user.get_photo() + ");"
         )
 
-    def openSendMsg(self, ui_sendMsg):
+    def refreshSendMsg(self):
+        self._ui_sendMsg
         # update user
         username = self._user.get_username()
         self._user = self._user_factory.check_user_by_username(username)
 
         # set user name
-        ui_sendMsg.label_Sender_Username.setText(self._user.get_username())
+        self._ui_sendMsg.label_Sender_Username.setText(self._user.get_username())
 
         # private key path from db
-        ui_sendMsg.label_Private_Key_Location.setText(
+        self._ui_sendMsg.label_Private_Key_Location.setText(
             self._user.get_private_key_location()
         )
 
@@ -271,14 +310,14 @@ class Init:
         user_list.remove(self._user.get_username())
 
         # add all receivers to combobox
-        ui_sendMsg.comboBox_Receiver.addItems(user_list)
+        self._ui_sendMsg.comboBox_Receiver.addItems(user_list)
 
         # set default public key
-        current_receiver_selected = ui_sendMsg.comboBox_Receiver.currentText()
+        current_receiver_selected = self._ui_sendMsg.comboBox_Receiver.currentText()
 
         # set public key label to show key length
         # get key len by receiver username
-        ui_sendMsg.label_RPK.setText(
+        self._ui_sendMsg.label_RPK.setText(
             "Receiver's publice key("
             + str(self._user_factory.get_key_len(current_receiver_selected))
             + ")"
@@ -290,11 +329,22 @@ class Init:
         )
         # bytes to str
         str_receiver_public_key = receiver_public_key.decode("UTF-8")
-        ui_sendMsg.textEdit_Receiver_Public_Key.setPlainText(str_receiver_public_key)
-
-        ui_sendMsg.comboBox_Receiver.currentTextChanged.connect(
-            lambda: {self.send_msg_comboBox_onchange(ui_sendMsg)}
+        self._ui_sendMsg.textEdit_Receiver_Public_Key.setPlainText(
+            str_receiver_public_key
         )
+
+        self._ui_sendMsg.comboBox_Receiver.currentTextChanged.connect(
+            lambda: {self.send_msg_comboBox_onchange(self._ui_sendMsg)}
+        )
+
+    def openSendMsg(self):
+        # init data load
+        self.refreshSendMsg()
+
+        # # refresher
+        # timer = QTimer()
+        # timer.timeout.connect(self.refreshSendMsg)
+        # timer.start(1000)
 
     def send_msg_comboBox_onchange(self, ui_sendMsg):
         current_receiver_selected = ui_sendMsg.comboBox_Receiver.currentText()
@@ -398,16 +448,16 @@ class Init:
                 private_key_path, self._user.get_username
             )
 
-    def openSendFile(self, ui_sendFile):
+    def refreshSendFile(self):
         # update user
         username = self._user.get_username()
         self._user = self._user_factory.check_user_by_username(username)
 
         # set user name
-        ui_sendFile.label_Sender_Username.setText(self._user.get_username())
+        self._ui_sendFile.label_Sender_Username.setText(self._user.get_username())
 
         # private key path from db
-        ui_sendFile.label_Private_Key_Location.setText(
+        self._ui_sendFile.label_Private_Key_Location.setText(
             self._user.get_private_key_location()
         )
 
@@ -417,14 +467,14 @@ class Init:
         user_list.remove(self._user.get_username())
 
         # add all receivers to combobox
-        ui_sendFile.comboBox_Receiver.addItems(user_list)
+        self._ui_sendFile.comboBox_Receiver.addItems(user_list)
 
         # set default public key
-        current_receiver_selected = ui_sendFile.comboBox_Receiver.currentText()
+        current_receiver_selected = self._ui_sendFile.comboBox_Receiver.currentText()
 
         # set public key label to show key length
         # get key len by receiver username
-        ui_sendFile.label_RPK.setText(
+        self._ui_sendFile.label_RPK.setText(
             "Receiver's publice key("
             + str(self._user_factory.get_key_len(current_receiver_selected))
             + ")"
@@ -437,11 +487,16 @@ class Init:
 
         # bytes to str
         str_receiver_public_key = receiver_public_key.decode("UTF-8")
-        ui_sendFile.textEdit_Receiver_Public_Key.setPlainText(str_receiver_public_key)
-
-        ui_sendFile.comboBox_Receiver.currentTextChanged.connect(
-            lambda: {self.send_file_comboBox_onchange(ui_sendFile)}
+        self._ui_sendFile.textEdit_Receiver_Public_Key.setPlainText(
+            str_receiver_public_key
         )
+
+        self._ui_sendFile.comboBox_Receiver.currentTextChanged.connect(
+            lambda: {self.send_file_comboBox_onchange(self._ui_sendFile)}
+        )
+
+    def openSendFile(self):
+        self.refreshSendFile()
 
     def send_file_comboBox_onchange(self, ui_sendFile):
         current_receiver_selected = ui_sendFile.comboBox_Receiver.currentText()
@@ -609,26 +664,27 @@ class Init:
             ui_checkMsg.text_Message.setPlainText(f_info["file_name"])
             ui_checkMsg.label.setText("Filename")
 
-    def openCheckMsg(self, ui_checkMsg):
+    def refreshCheckMsg(self):
+        print("ref checkmsg")
         # set remembered private key file path
-        ui_checkMsg.label_Private_Key_Location.setText(
+        self._ui_checkMsg.label_Private_Key_Location.setText(
             self._user.get_private_key_location()
         )
 
-        ui_checkMsg.label.setText("Message")
-        ui_checkMsg.pushButton_Decrypt.clicked.connect(
-            lambda: {self.decrypt(ui_checkMsg)}
+        self._ui_checkMsg.label.setText("Message")
+        self._ui_checkMsg.pushButton_Decrypt.clicked.connect(
+            lambda: {self.decrypt(self._ui_checkMsg)}
         )
-        ui_checkMsg.pushButton_Validate.clicked.connect(
-            lambda: {self.verify(ui_checkMsg)}
+        self._ui_checkMsg.pushButton_Validate.clicked.connect(
+            lambda: {self.verify(self._ui_checkMsg)}
         )
-        ui_checkMsg.pushButton_Download_The_File.clicked.connect(
-            lambda: {self.downloadFile(ui_checkMsg)}
+        self._ui_checkMsg.pushButton_Download_The_File.clicked.connect(
+            lambda: {self.downloadFile(self._ui_checkMsg)}
         )
         # init disable buttons
-        ui_checkMsg.pushButton_Decrypt.setEnabled(False)
-        ui_checkMsg.pushButton_Validate.setEnabled(False)
-        ui_checkMsg.pushButton_Download_The_File.setEnabled(False)
+        self._ui_checkMsg.pushButton_Decrypt.setEnabled(False)
+        self._ui_checkMsg.pushButton_Validate.setEnabled(False)
+        self._ui_checkMsg.pushButton_Download_The_File.setEnabled(False)
 
         # update user
         username = self._user.get_username()
@@ -637,45 +693,56 @@ class Init:
         # received msg list
         msg_list = self._user.get_message()
         msg_count = len(msg_list)
-        ui_checkMsg.tableWidget_Message.setColumnCount(4)
-        ui_checkMsg.tableWidget_Message.setRowCount(msg_count)
+        self._ui_checkMsg.tableWidget_Message.setColumnCount(4)
+        self._ui_checkMsg.tableWidget_Message.setRowCount(msg_count)
 
-        ui_checkMsg.tableWidget_Message.selectionModel().selectionChanged.connect(
+        self._ui_checkMsg.tableWidget_Message.selectionModel().selectionChanged.connect(
             lambda: {
                 self.onTableSelectionChanged(
-                    ui_checkMsg.tableWidget_Message.selectionModel().selection(),
-                    ui_checkMsg,
+                    self._ui_checkMsg.tableWidget_Message.selectionModel().selection(),
+                    self._ui_checkMsg,
                 )
             }
         )
 
-        # for loop
+        # for loop in table
         for i in range(0, msg_count):
             # every row
             item = QtWidgets.QTableWidgetItem()
 
             # row header index
-            ui_checkMsg.tableWidget_Message.setVerticalHeaderItem(i, item)
-            row_header_item = ui_checkMsg.tableWidget_Message.verticalHeaderItem(i)
+            self._ui_checkMsg.tableWidget_Message.setVerticalHeaderItem(i, item)
+            row_header_item = self._ui_checkMsg.tableWidget_Message.verticalHeaderItem(
+                i
+            )
             row_header_item.setText(str(i + 1))
 
             # 4 items in a row
-            ui_checkMsg.tableWidget_Message.setItem(
+            self._ui_checkMsg.tableWidget_Message.setItem(
                 i, 0, QTableWidgetItem(msg_list[i]["sender"])
             )
-            ui_checkMsg.tableWidget_Message.setItem(
+            self._ui_checkMsg.tableWidget_Message.setItem(
                 i, 1, QTableWidgetItem(msg_list[i]["message_type"])
             )
-            ui_checkMsg.tableWidget_Message.setItem(
+            self._ui_checkMsg.tableWidget_Message.setItem(
                 i,
                 2,
                 QTableWidgetItem(
                     msg_list[i]["timestamp"].strftime("%m/%d/%Y, %H:%M:%S")
                 ),
             )
-            ui_checkMsg.tableWidget_Message.setItem(
+            self._ui_checkMsg.tableWidget_Message.setItem(
                 i, 3, QTableWidgetItem(msg_list[i]["delivery_type"])
             )
+
+    def openCheckMsg(self):
+        # init data load
+        self.refreshCheckMsg()
+
+        # # refresher
+        # timer = QTimer()
+        # timer.timeout.connect(self.refreshCheckMsg())
+        # timer.start(3000)
 
     def decrypt(self, ui_checkMsg):
         # save private key path to db

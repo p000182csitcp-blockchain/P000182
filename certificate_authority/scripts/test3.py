@@ -6,11 +6,11 @@ import time
 
 
 def main():
-    Record().get_record()
+    # Record().get_record()
     # clean the file directory
     clean_file()
     # wait for record download
-    time.sleep(9)
+    # time.sleep(9)
     Init().start_ui()
 
     # Record().get_record()

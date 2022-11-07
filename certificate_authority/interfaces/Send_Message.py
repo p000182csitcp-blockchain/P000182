@@ -72,7 +72,7 @@ class Ui_Send_Message(object):
         self.pushButton_Send.setFont(font)
         self.pushButton_Send.setObjectName("pushButton_Send")
         self.label_Choose_A_Send_Type = QtWidgets.QLabel(Send_Message)
-        self.label_Choose_A_Send_Type.setGeometry(QtCore.QRect(30, 490, 191, 21))
+        self.label_Choose_A_Send_Type.setGeometry(QtCore.QRect(30, 490, 250, 21))
         font = QtGui.QFont()
         font.setFamily("Arial Black")
         font.setPointSize(10)

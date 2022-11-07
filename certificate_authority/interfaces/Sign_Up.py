@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from MongoDB.UserFactory import *
+from MongoDB.WalletKey import *
 
 
 class Ui_Sign_Up(object):
@@ -17,7 +19,7 @@ class Ui_Sign_Up(object):
         Sign_Up.setObjectName("Sign_Up")
         Sign_Up.resize(556, 931)
         font = QtGui.QFont()
-        font.setFamily("微软雅黑")
+        font.setFamily("Arial")
         font.setPointSize(14)
         Sign_Up.setFont(font)
         self.label_Sign_Up = QtWidgets.QLabel(Sign_Up)
@@ -61,7 +63,7 @@ class Ui_Sign_Up(object):
         self.label_Check_Password.setFont(font)
         self.label_Check_Password.setObjectName("label_Check_Password")
         self.label_Wallet_Private_Key = QtWidgets.QLabel(Sign_Up)
-        self.label_Wallet_Private_Key.setGeometry(QtCore.QRect(40, 430, 231, 31))
+        self.label_Wallet_Private_Key.setGeometry(QtCore.QRect(40, 430, 350, 31))
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(14)
@@ -196,7 +198,7 @@ class Ui_Sign_Up(object):
         self.pushButton_Sign_Up.setText(_translate("Sign_Up", "Sign up"))
         self.label_Check_Password.setText(_translate("Sign_Up", "Check password*"))
         self.label_Wallet_Private_Key.setText(
-            _translate("Sign_Up", "Wallet private key*")
+            _translate("Sign_Up", "Wallet private key (Automatic Generated)")
         )
         self.label_Email.setText(_translate("Sign_Up", "Email"))
         self.label_Phone_Number.setText(_translate("Sign_Up", "Phone number"))
@@ -218,6 +220,12 @@ class Ui_Sign_Up(object):
         self.radioButton_1024.setText(_translate("Sign_Up", "1024"))
         self.radioButton_2048.setText(_translate("Sign_Up", "2048"))
         self.radioButton_3072.setText(_translate("Sign_Up", "3072"))
+
+        # suto set wallet key
+        # count document(=row)
+        user_count = UserFactory()._users.count_documents({})
+        wallet_key = WalletKey().get_wallet_by_index(user_count)
+        self.lineEdit_Wallet_Private_Key.setText(wallet_key)
 
     def signUpRequest(self):
         return (
