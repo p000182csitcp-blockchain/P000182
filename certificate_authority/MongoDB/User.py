@@ -6,10 +6,9 @@ from MongoDB.Message import Message
 
 
 class User:
-
     def encodeByHash(self, str) -> string:
         str = "abc" + str
-        str_hash = hashlib.sha256(str.encode('utf-8')).hexdigest()
+        str_hash = hashlib.sha256(str.encode("utf-8")).hexdigest()
         return str_hash
 
     # generate key pairs(y)
@@ -18,19 +17,21 @@ class User:
         KeyPair = RSA.generate(bits=key_length)
 
         private_key = "file/private_key.pem"
-        with open(private_key, 'wb') as fpri:
+        with open(private_key, "wb") as fpri:
             fpri.write(KeyPair.exportKey("PEM"))
             fpri.close()
 
         public_key = KeyPair.publickey().exportKey("PEM")
-        
+
         return {"private_key": private_key, "public_key": public_key}
 
     def new_keyPairs(self, key_length):
         return KeyPairs(self.create_key_pairs_by_length(key_length), key_length)
 
     # (y)
-    def __init__(self, username, password, wallet_key="", email="", phone_number="") -> None:
+    def __init__(
+        self, username, password, wallet_key="", email="", phone_number=""
+    ) -> None:
         self._username = username
         self._password = self.encodeByHash(password)
         self._wallet_key = wallet_key
@@ -64,7 +65,7 @@ class User:
     def set_message(self, message) -> None:
         self._message = message
 
-    def get_photo(self) -> bytes:
+    def get_photo(self):
         return self._photo
 
     def set_photo(self, photo) -> None:

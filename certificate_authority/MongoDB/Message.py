@@ -8,6 +8,7 @@ class Message:
         self._receiver = receiver
         self._message_type = message_type
         self._message = message
+        self._signature = ""
         self._timestamp = datetime.now()
         self._delivery_type = delivery_type
 
@@ -22,6 +23,12 @@ class Message:
 
     def set_timestamp(self, timestamp) -> None:
         self._timestamp = timestamp
+
+    def get_signature(self):
+        return self._signature
+
+    def set_signature(self, signature) -> None:
+        self._signature = signature
 
     def get_message(self):
         return self._message

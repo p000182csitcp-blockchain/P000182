@@ -13,8 +13,9 @@ import os
 
 def get_private_key(private_key_path):
     # read the private key by using the path
-    private_key_file = open(private_key_path, "rb")
-    private_key = private_key_file.read()
+    with open(private_key_path, "rb") as fp:
+        private_key = fp.read()
+
     return private_key
 
 
@@ -147,7 +148,7 @@ def encrypt_blob(blob, receiver_public_key):
     return base64.b64encode(encrypted)
 
 
-def decrypt_blob(encrypted_blob, private_key_path):
+def decrypt_blob(encrypted_blob, private_key_path, key_length):
     # read the private key by using the path
     private_key = get_private_key(private_key_path)
 
@@ -160,7 +161,9 @@ def decrypt_blob(encrypted_blob, private_key_path):
 
     # In determining the chunk size, determine the private key length used in bytes.
     # The data will be in decrypted in chunks
-    chunk_size = 128
+    # chunk_size = 128
+    chunk_size = int(key_length / 8)
+    print("chunk_size", chunk_size)
     offset = 0
     decrypted = b""
 
@@ -218,12 +221,13 @@ def sign_blob(blob, private_key):
     return blob_signature
 
 
-def verify_blob(blob_signature, blob, sender_public_key):
+def verify_blob(blob_signature, blob, sender_public_key, key_length):
     blob = zlib.compress(blob)
 
     # In determining the chunk size, determine the private key length used in bytes.
     # The data will be in decrypted in chunks
-    chunk_size = 128
+    # chunk_size = 128
+    chunk_size = int(key_length / 8)
     offset = 0
     verification = True
 
@@ -262,20 +266,18 @@ def encrypt_file(file_path, receiver_public_key):
     return encrypt_blob(blob, receiver_public_key)
 
 
-def decrypt_file(encrypted_file, file_name, private_key_path):
+def decrypt_file(encrypted_file, file_name, private_key_path, key_length):
     try:
-        # read the private key by using the path
-        private_key = get_private_key(private_key_path)
-
         # decrypt file and save
         # print(os.getcwd())
-        file_path = os.getcwd() + "\\" + file_name
+        file_path = "file/" + file_name
         # print(filepath2)
 
         with open(file_path, "wb") as file:
-            file.write(decrypt_blob(encrypted_file, private_key))
+            file.write(decrypt_blob(encrypted_file, private_key_path, key_length))
 
         print("[ Encrypted file is decrypted and saved]")
+
     except:
         print("[ Invalid private key ]")
         return ""
@@ -295,11 +297,11 @@ def sign_file(private_key_path, file_path):
         return ""
 
 
-def verify_file(blob_signature, blob, sender_public_key):
-    return verify_blob(blob_signature, blob, sender_public_key)
+def verify_file(blob_signature, blob, sender_public_key, key_length):
+    return verify_blob(blob_signature, blob, sender_public_key, key_length)
 
 
-def sign_encrypted_File(private_key_path, encrypted_file):
+def sign_encrypted_file(private_key_path, encrypted_file):
     try:
         # read the private key by using the path
         private_key = get_private_key(private_key_path)
@@ -309,5 +311,9 @@ def sign_encrypted_File(private_key_path, encrypted_file):
         return ""
 
 
-def verify_encryptedFile(encrypted_file_signature, encrypted_file, sender_public_key):
-    return verify_blob(encrypted_file_signature, encrypted_file, sender_public_key)
+def verify_encrypted_file(
+    encrypted_file_signature, encrypted_file, sender_public_key, key_length
+):
+    return verify_blob(
+        encrypted_file_signature, encrypted_file, sender_public_key, key_length
+    )
