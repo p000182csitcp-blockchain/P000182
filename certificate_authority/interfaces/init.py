@@ -663,6 +663,9 @@ class Init:
             f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
             ui_checkMsg.text_Message.setPlainText(f_info["file_name"])
             ui_checkMsg.label.setText("Filename")
+        # show msg if type is msg
+        else:
+            ui_checkMsg.label.setText("Message")
 
     def refreshCheckMsg(self):
         print("ref checkmsg")

@@ -6,6 +6,9 @@ import time
 
 
 def main():
+
+    # records = MongoDatabase().getDeployment()
+    # records.delete_many()
     # Record().get_record()
     # clean the file directory
     clean_file()
@@ -18,13 +21,3 @@ def main():
     # run_process = multiprocessing.Process(target=run_main_program)
     # check_deployment_process.start()
     # run_process.start()
-
-
-def check_deployment():
-    while True:
-        Record().get_record()
-        time.sleep(1)
-
-
-def run_main_program():
-    Init().start_ui()

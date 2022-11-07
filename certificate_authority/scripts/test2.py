@@ -36,7 +36,8 @@ def main():
     certification = RSACertification[2]
     # show certificate information
     user_name = certification.getUserName({"from": wallet_account})
-    public_key_bytes_array = certification.getPublicKey({"from": wallet_account})
+    public_key_bytes_array = certification.getPublicKey(
+        {"from": wallet_account})
     public_key = b""
     for bt in public_key_bytes_array:
         public_key += bt
@@ -53,7 +54,8 @@ def main():
     certification = RSACertification[1]
     # show certificate information
     user_name = certification.getUserName({"from": wallet_account})
-    public_key_bytes_array = certification.getPublicKey({"from": wallet_account})
+    public_key_bytes_array = certification.getPublicKey(
+        {"from": wallet_account})
     public_key = b""
     for bt in public_key_bytes_array:
         public_key += bt
