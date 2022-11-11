@@ -25,4 +25,4 @@
 * run `pip install eth-brownie`
 * run `python -m pip install pymongo`
 * run `cd certificate_authority`
-* run `brownie run scripts/test2.py --network goerli`
+* run `brownie run scripts/test3.py --network goerli`
