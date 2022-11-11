@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>res/arrow.png</file>
+    <file>res/key.png</file>
+    <file>res/message.png</file>
+    <file>res/receive.png</file>
+    <file>res/send.png</file>
+    <file>res/send_file.png</file>
+    <file>res/send_message.png</file>
+    <file>res/user.png</file>
+  </qresource>
+</RCC>
