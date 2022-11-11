@@ -191,7 +191,7 @@ class Ui_Sign_Up(object):
 
     def retranslateUi(self, Sign_Up):
         _translate = QtCore.QCoreApplication.translate
-        Sign_Up.setWindowTitle(_translate("Sign_Up", "Form"))
+        Sign_Up.setWindowTitle(_translate("Sign_Up", "Sign Up"))
         self.label_Sign_Up.setText(_translate("Sign_Up", "Sign up"))
         self.label_Username.setText(_translate("Sign_Up", "Username*"))
         self.label_Password.setText(_translate("Sign_Up", "Password*"))
@@ -206,7 +206,7 @@ class Ui_Sign_Up(object):
             _translate("Sign_Up", "Make sure your passwords are the same twice")
         )
         self.label_RSA_Key_Pairs_Length.setText(
-            _translate("Sign_Up", "Length of RAS key pairs")
+            _translate("Sign_Up", "Length of RSA key pairs")
         )
         self.label_Have_A_Account.setText(
             _translate("Sign_Up", "Already have an account?")

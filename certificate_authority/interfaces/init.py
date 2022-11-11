@@ -21,9 +21,21 @@ class Init:
         self._user = None
         self._user_factory = UserFactory()
         self._m_selected = None
+
+        self._ui_login = None
+        self._ui_signUp = None
+        self._ui_homePage = None
         self._ui_sendMsg = None
         self._ui_checkMsg = None
         self._ui_sendFile = None
+
+        self._window_login = None
+        self._window_signUp = None
+        self._window_homePage = None
+        self._window_sendMsg = None
+        self._window_checkMsg = None
+        self._window_sendFile = None
+
         self._prev_msg_count = 0
 
     # refresh pages every 3 sec
@@ -40,134 +52,187 @@ class Init:
         if db_msg_count != self._prev_msg_count:
             # update prev msg count
             self._prev_msg_count = db_msg_count
-            self.refreshSendMsg()
-            self.refreshSendFile()
+            # self.refreshSendMsg()
+            # self.refreshSendFile()
             self.refreshCheckMsg()
 
     def refreshTimer(self):
-        # Repeating timer, calls random_pick over and over.
+        # Repeating timer, calls random_pick over and over
         self.picktimer = QTimer()
         self.picktimer.setInterval(500)
         self.picktimer.timeout.connect(self.refreshPages)
         self.picktimer.start()
 
-    def start_ui(self):
-        app = QApplication([])
-        # Log in page widget
-        window_login = QMainWindow()
-        ui_login = Ui_Login()
-        ui_login.setupUi(window_login)
-        window_login.show()
-
-        # Sign up page widget
-        window_signup = QMainWindow()
-        ui_signup = Ui_Sign_Up()
-        ui_signup.setupUi(window_signup)
-
-        # Home page widget
-        window_homepage = QMainWindow()
-        ui_homepage = Ui_Homepage()
-        ui_homepage.setupUi(window_homepage)
-
-        # SendMsg page widget
-        window_sendMsg = QMainWindow()
-        self._ui_sendMsg = Ui_Send_Message()
-        self._ui_sendMsg.setupUi(window_sendMsg)
-
-        # SendFile page widget
-        window_sendFile = QMainWindow()
-        self._ui_sendFile = Ui_Send_File()
-        self._ui_sendFile.setupUi(window_sendFile)
-
-        # Check msg page widget
-        window_checkMsg = QMainWindow()
-        self._ui_checkMsg = Ui_Check_Message()
-        self._ui_checkMsg.setupUi(window_checkMsg)
+    def openLogin(self):
+        self._window_login = QMainWindow()
+        self._ui_login = Ui_Login()
+        self._ui_login.setupUi(self._window_login)
 
         # Login to Sign up button event
-        ui_login.pushButton_register.clicked.connect(
-            lambda: {window_signup.show(), window_login.close()}
+        self._ui_login.pushButton_register.clicked.connect(
+            lambda: {self.openSignUp(), self.closeLogin()}
         )
 
         # Login button event
-        ui_login.pushButton_Login.clicked.connect(
-            lambda: {
-                self.login(
-                    ui_login.loginRequest(),
-                    ui_homepage,
-                    window_homepage,
-                    ui_login,
-                    window_login,
-                )
-            }
-        )
+        self._ui_login.pushButton_Login.clicked.connect(lambda: {self.login()})
+
+        self._window_login.show()
+
+    def openSignUp(self):
+        self._window_signUp = QMainWindow()
+        self._ui_signUp = Ui_Sign_Up()
+        self._ui_signUp.setupUi(self._window_signUp)
 
         # Sign up to Login button event
-        ui_signup.pushButton_Login.clicked.connect(
-            lambda: {window_login.show(), window_signup.close()}
+        self._ui_signUp.pushButton_Login.clicked.connect(
+            lambda: {self.openLogin(), self.closeSignUp()}
         )
 
         # Signup button event
-        ui_signup.pushButton_Sign_Up.clicked.connect(
+        self._ui_signUp.pushButton_Sign_Up.clicked.connect(
+            lambda: {self.signUp()})
+
+        self._window_signUp.show()
+
+    def openHomePage(self):
+        self._window_homePage = QMainWindow()
+        self._ui_homePage = Ui_Homepage()
+        self._ui_homePage.setupUi(self._window_homePage)
+
+        # Home page update photo
+        self._ui_homePage.pushButton_Update_photo.clicked.connect(
+            lambda: {self.updatePhoto()}
+        )
+
+        # Home page go to send message page
+        self._ui_homePage.pushButton_Send_Message.clicked.connect(
+            lambda: {self.openSendMsg(), self.refreshSendMsg()}
+        )
+
+        # Home page go to send file page
+        self._ui_homePage.pushButton_Send_File.clicked.connect(
+            lambda: {self.openSendFile(), self.refreshSendFile()}
+        )
+
+        # Home page go to message list page
+        self._ui_homePage.pushButton_Check_Message.clicked.connect(
             lambda: {
-                self.signUp(
-                    ui_signup.signUpRequest(),
-                    window_login,
-                    ui_signup,
-                    window_signup,
-                )
+                self.openCheckMsg(),
+                self.refreshCheckMsg(),
+                self.refreshPages(),
             }
         )
 
         # Home page log out
-        ui_homepage.pushButton_Log_Out.clicked.connect(
-            lambda: {window_login.show(), window_homepage.close()}
-        )
-
-        # Home page update photo
-        ui_homepage.pushButton_Update_photo.clicked.connect(
-            lambda: {self.updatePhoto(ui_homepage.updatePhotoRequest(), ui_homepage)}
-        )
-
-        # Main page go to send message page
-        ui_homepage.pushButton_Send_Message.clicked.connect(
-            lambda: {window_sendMsg.show(), self.openSendMsg(), self.refreshPages()}
-        )
-
-        # Main page go to send file page
-        ui_homepage.pushButton_Send_File.clicked.connect(
-            lambda: {window_sendFile.show(), self.openSendFile(), self.refreshPages()}
-        )
-
-        # Main page go to message list page
-        ui_homepage.pushButton_Check_Message.clicked.connect(
-            lambda: {window_checkMsg.show(), self.openCheckMsg(), self.refreshPages()}
-        )
-
-        # send message page send button event
-        self._ui_sendMsg.pushButton_Send.clicked.connect(
+        self._ui_homePage.pushButton_Log_Out.clicked.connect(
             lambda: {
-                self.sendMessage(
-                    self._ui_sendMsg.sendingRequest(), window_sendMsg, self._ui_sendMsg
-                )
+                self.openLogin(),
+                self.closeSendFile(),
+                self.closeSendMsg(),
+                self.closeHomePage(),
             }
         )
+
+        self._window_homePage.show()
+
+    def openSendFile(self):
+        self._window_sendFile = QMainWindow()
+        self._ui_sendFile = Ui_Send_File()
+        self._ui_sendFile.setupUi(self._window_sendFile)
 
         # send file page send button event
         self._ui_sendFile.pushButton_Send.clicked.connect(
-            lambda: {
-                self.sendFile(
-                    self._ui_sendFile.sendingRequest(),
-                    window_sendFile,
-                    self._ui_sendFile,
-                )
-            }
+            lambda: {self.sendFile()})
+
+        self._window_sendFile.show()
+
+    def openSendMsg(self):
+        self._window_sendMsg = QMainWindow()
+        self._ui_sendMsg = Ui_Send_Message()
+        self._ui_sendMsg.setupUi(self._window_sendMsg)
+
+        # send message page send button event
+        self._ui_sendMsg.pushButton_Send.clicked.connect(
+            lambda: {self.sendMessage()})
+
+        self._window_sendMsg.show()
+
+    def openCheckMsg(self):
+        self._window_checkMsg = QMainWindow()
+        self._ui_checkMsg = Ui_Check_Message()
+        self._ui_checkMsg.setupUi(self._window_checkMsg)
+
+        self._ui_checkMsg.pushButton_Decrypt.clicked.connect(
+            lambda: {self.decrypt()})
+        self._ui_checkMsg.pushButton_Validate.clicked.connect(
+            lambda: {self.verify()})
+        self._ui_checkMsg.pushButton_Download_The_File.clicked.connect(
+            lambda: {self.downloadFile()}
         )
 
+        self._window_checkMsg.show()
+
+    def closeLogin(self):
+        self._ui_login = None
+        if self._window_login != None:
+            self._window_login.close()
+            self._window_login = None
+
+    def closeSignUp(self):
+        self._ui_signUp = None
+        if self._window_signUp != None:
+            self._window_signUp.close()
+            self._window_signUp = None
+
+    def closeHomePage(self):
+        self._ui_homePage = None
+        if self._window_homePage != None:
+            self._window_homePage.close()
+            self._window_homePage = None
+
+    def closeSendMsg(self):
+        self._ui_sendMsg = None
+        if self._window_sendMsg != None:
+            self._window_sendMsg.close()
+            self._window_sendMsg = None
+
+    def closeSendFile(self):
+        self._ui_sendFile = None
+        if self._window_sendFile != None:
+            self._window_sendFile.close()
+            self._window_sendFile = None
+
+    def closeCheckMsg(self):
+        self._ui_checkMsg = None
+        if self._window_checkMsg != None:
+            self._window_checkMsg.close()
+            self._window_checkMsg = None
+
+    # get login request
+    def getLoginRequest(self):
+        return self._ui_login.loginRequest()
+
+    # get sgin up request
+    def getSignUpRequest(self):
+        return self._ui_signUp.signUpRequest()
+
+    def getUpdatePhotoRequest(self):
+        return self._ui_homePage.updatePhotoRequest()
+
+    def getSendMsgRequest(self):
+        return self._ui_sendMsg.sendingRequest()
+
+    def getSendFileRequest(self):
+        return self._ui_sendFile.sendingRequest()
+
+    def start_ui(self):
+        app = QApplication([])
+        # open login page at start
+        self.openLogin()
         sys.exit(app.exec_())
 
-    def login(self, login_info, ui_homepage, window_homepage, ui_login, window_login):
-        user_name, password = login_info
+    def login(self):
+        user_name, password = self.getLoginRequest()
         # login db
         self._user = self._user_factory.check_user(user_name, password)
 
@@ -180,19 +245,19 @@ class Init:
             login_successful = True
 
         if login_successful:
+            self.openHomePage()
             # pass user to checkMsg and show checkMsg window, then close login window
-            ui_homepage.label_Username.setText(self._user.get_username())
+            self._ui_homePage.label_Username.setText(self._user.get_username())
             # update photo
-            ui_homepage.label_Photo.setStyleSheet(
+            self._ui_homePage.label_Photo.setStyleSheet(
                 "image: url(" + self._user.get_photo() + ");"
             )
-            window_homepage.show()
-            window_login.close()
+            self.closeLogin()
         else:
-            ui_login.show_error("User name or password is incorrect.")
-            ui_login.reset_input()
+            self._ui_login.show_error("User name or password is incorrect.")
+            self._ui_login.reset_input()
 
-    def signUp(self, sign_up_info, window_login, ui_signup, window_signup):
+    def signUp(self):
         (
             user_name,
             password,
@@ -203,7 +268,7 @@ class Init:
             size_1024_selected,
             size_2048_selected,
             size_3072_selected,
-        ) = sign_up_info
+        ) = self.getSignUpRequest()
 
         if (
             user_name == ""
@@ -217,15 +282,15 @@ class Init:
             or phone == ""
             or phone == None
         ):
-            ui_signup.show_error("Please check your input.")
+            self._ui_signUp.show_error("Please check your input.")
         elif (
             size_1024_selected == False
             and size_2048_selected == False
             and size_3072_selected == False
         ):
-            ui_signup.show_error("Please check your input.")
+            self._ui_signUp.show_error("Please check your input.")
         elif password != password_check:
-            ui_signup.show_error(
+            self._ui_signUp.show_error(
                 "Please make sure that the two passwords are the same."
             )
         else:
@@ -234,7 +299,8 @@ class Init:
             name_registered = self._user_factory.is_exist_username(user_name)
 
             if name_registered:
-                ui_signup.show_error("The user name has been registered.")
+                self._ui_signUp.show_error(
+                    "The user name has been registered.")
             else:
                 if size_1024_selected:
                     key_length = 1024
@@ -270,23 +336,22 @@ class Init:
                     user.get_keypairs().get_private_key()
                 )
 
-                ui_signup.show_info("Sign up successful!")
+                self._ui_signUp.show_info("Sign up successful!")
 
-                window_login.show()
-                window_signup.close()
+                self.openLogin()
+                self.closeSignUp()
 
-    def updatePhoto(self, photo_path, ui_homepage):
+    def updatePhoto(self):
+        photo_path = self.getUpdatePhotoRequest()
         # store photo in db
         self._user_factory.update_photo(self._user.get_username(), photo_path)
         # fetch updated user info from db
         self._user = self._user_factory.check_user_by_username(
             self._user.get_username()
         )
-        # for test
-        # self._user = self._user_factory.check_user(self._user.get_username(), "123")
 
         # update photo
-        ui_homepage.label_Photo.setStyleSheet(
+        self._ui_homePage.label_Photo.setStyleSheet(
             "image: url(" + self._user.get_photo() + ");"
         )
 
@@ -297,7 +362,8 @@ class Init:
         self._user = self._user_factory.check_user_by_username(username)
 
         # set user name
-        self._ui_sendMsg.label_Sender_Username.setText(self._user.get_username())
+        self._ui_sendMsg.label_Sender_Username.setText(
+            self._user.get_username())
 
         # private key path from db
         self._ui_sendMsg.label_Private_Key_Location.setText(
@@ -334,24 +400,15 @@ class Init:
         )
 
         self._ui_sendMsg.comboBox_Receiver.currentTextChanged.connect(
-            lambda: {self.send_msg_comboBox_onchange(self._ui_sendMsg)}
+            lambda: {self.send_msg_comboBox_onchange()}
         )
 
-    def openSendMsg(self):
-        # init data load
-        self.refreshSendMsg()
-
-        # # refresher
-        # timer = QTimer()
-        # timer.timeout.connect(self.refreshSendMsg)
-        # timer.start(1000)
-
-    def send_msg_comboBox_onchange(self, ui_sendMsg):
-        current_receiver_selected = ui_sendMsg.comboBox_Receiver.currentText()
+    def send_msg_comboBox_onchange(self):
+        current_receiver_selected = self._ui_sendMsg.comboBox_Receiver.currentText()
 
         # set public key label to show key length
         # get key len by receiver username
-        ui_sendMsg.label_RPK.setText(
+        self._ui_sendMsg.label_RPK.setText(
             "Receiver's publice key("
             + str(self._user_factory.get_key_len(current_receiver_selected))
             + ")"
@@ -363,9 +420,11 @@ class Init:
         )
         # bytes to str
         str_receiver_public_key = receiver_public_key.decode("UTF-8")
-        ui_sendMsg.textEdit_Receiver_Public_Key.setPlainText(str_receiver_public_key)
+        self._ui_sendMsg.textEdit_Receiver_Public_Key.setPlainText(
+            str_receiver_public_key
+        )
 
-    def sendMessage(self, send_info, window_sendMsg, ui_sendMsg):
+    def sendMessage(self):
         (
             receiver,
             str_receiver_public_key,
@@ -374,7 +433,7 @@ class Init:
             to_encrypt,
             to_sign,
             to_encrypt_sign,
-        ) = send_info
+        ) = self.getSendMsgRequest()
 
         # str to bytes
         receiver_public_key = str_receiver_public_key.encode("utf-8")
@@ -385,7 +444,7 @@ class Init:
             or message == None
             or (to_encrypt == False and to_sign == False and to_encrypt_sign == False)
         ):
-            ui_sendMsg.show_error("Please check your input.")
+            self._ui_sendMsg.show_error("Please check your input.")
         else:
             message_to_send = ""
             signature_to_send = ""
@@ -393,34 +452,34 @@ class Init:
             # check option: encrypt, sign or encrypt_sign
             if to_encrypt:
                 delivery_type = "ENCRYPTED"
-                encrypted_message = encrypt_message(message, receiver_public_key)
+                encrypted_message = encrypt_message(
+                    message, receiver_public_key)
                 ### db ###########
                 message_to_send = encrypted_message
 
-                ui_sendMsg.show_info("Message sent!")
-                window_sendMsg.close()
+                self._ui_sendMsg.show_info("Message sent!")
             elif to_sign:
                 delivery_type = "SIGNED"
                 # check if private key file exit
                 isPrivateKeyFileExist = os.path.exists(private_key_path)
                 if isPrivateKeyFileExist == False:
-                    ui_sendMsg.show_error("Private key file not found.")
+                    self._ui_sendMsg.show_error("Private key file not found.")
                 else:
                     signature = sign_message(message, private_key_path)
                     ### db ###########
                     message_to_send = message
                     signature_to_send = signature
 
-                    ui_sendMsg.show_info("Message sent!")
-                    window_sendMsg.close()
+                    self._ui_sendMsg.show_info("Message sent!")
             else:
                 delivery_type = "ENCRYPTED_AND_SIGNED"
                 # check if private key file exit
                 isPrivateKeyFileExist = os.path.exists(private_key_path)
                 if isPrivateKeyFileExist == False:
-                    ui_sendMsg.show_error("Private key file not found.")
+                    self._ui_sendMsg.show_error("Private key file not found.")
                 else:
-                    encrypted_message = encrypt_message(message, receiver_public_key)
+                    encrypted_message = encrypt_message(
+                        message, receiver_public_key)
                     signature = sign_encrypted_message(
                         encrypted_message, private_key_path
                     )
@@ -428,8 +487,7 @@ class Init:
                     message_to_send = encrypted_message
                     signature_to_send = signature
 
-                    ui_sendMsg.show_info("Message sent!")
-                    window_sendMsg.close()
+                    self._ui_sendMsg.show_info("Message sent!")
 
             msg = Message(
                 self._user.get_username(),
@@ -448,13 +506,16 @@ class Init:
                 private_key_path, self._user.get_username
             )
 
+            self.closeSendMsg()
+
     def refreshSendFile(self):
         # update user
         username = self._user.get_username()
         self._user = self._user_factory.check_user_by_username(username)
 
         # set user name
-        self._ui_sendFile.label_Sender_Username.setText(self._user.get_username())
+        self._ui_sendFile.label_Sender_Username.setText(
+            self._user.get_username())
 
         # private key path from db
         self._ui_sendFile.label_Private_Key_Location.setText(
@@ -492,14 +553,14 @@ class Init:
         )
 
         self._ui_sendFile.comboBox_Receiver.currentTextChanged.connect(
-            lambda: {self.send_file_comboBox_onchange(self._ui_sendFile)}
+            lambda: {self.send_file_comboBox_onchange()}
         )
 
-    def openSendFile(self):
-        self.refreshSendFile()
+    # def openSendFile(self):
+    #     self.refreshSendFile()
 
-    def send_file_comboBox_onchange(self, ui_sendFile):
-        current_receiver_selected = ui_sendFile.comboBox_Receiver.currentText()
+    def send_file_comboBox_onchange(self):
+        current_receiver_selected = self._ui_sendFile.comboBox_Receiver.currentText()
 
         # use receiver name get public key
         receiver_public_key = self._user_factory.get_public_key(
@@ -507,17 +568,19 @@ class Init:
         )
         # bytes to str
         str_receiver_public_key = receiver_public_key.decode("UTF-8")
-        ui_sendFile.textEdit_Receiver_Public_Key.setPlainText(str_receiver_public_key)
+        self._ui_sendFile.textEdit_Receiver_Public_Key.setPlainText(
+            str_receiver_public_key
+        )
 
         # set public key label to show key length
         # get key len by receiver username
-        ui_sendFile.label_RPK.setText(
+        self._ui_sendFile.label_RPK.setText(
             "Receiver's publice key("
             + str(self._user_factory.get_key_len(current_receiver_selected))
             + ")"
         )
 
-    def sendFile(self, send_info, window_sendFile, ui_sendFile):
+    def sendFile(self):
         (
             receiver,
             str_receiver_public_key,
@@ -526,7 +589,7 @@ class Init:
             to_encrypt,
             to_sign,
             to_encrypt_sign,
-        ) = send_info
+        ) = self.getSendFileRequest()
 
         # str to bytes
         receiver_public_key = str_receiver_public_key.encode("utf-8")
@@ -538,7 +601,7 @@ class Init:
             or os.path.exists(file_path) == False
             or (to_encrypt == False and to_sign == False and to_encrypt_sign == False)
         ):
-            ui_sendFile.show_error("Please check your input.")
+            self._ui_sendFile.show_error("Please check your input.")
         else:
             file_to_send = ""
             signature_to_send = ""
@@ -560,14 +623,13 @@ class Init:
 
                 file_to_send = "file/" + file_path.split("/")[-1]
 
-                ui_sendFile.show_info("File sent!")
-                window_sendFile.close()
+                self._ui_sendFile.show_info("File sent!")
             elif to_sign:
                 delivery_type = "SIGNED"
                 # check if private key file exit
                 isPrivateKeyFileExist = os.path.exists(private_key_path)
                 if isPrivateKeyFileExist == False:
-                    ui_sendFile.show_error("Private key file not found.")
+                    self._ui_sendFile.show_error("Private key file not found.")
                 else:
                     signature = sign_file(private_key_path, file_path)
                     ### db ###########
@@ -577,17 +639,18 @@ class Init:
                     file_to_send = file_path
                     signature_to_send = signature
 
-                    ui_sendFile.show_info("File sent!")
-                    window_sendFile.close()
+                    self._ui_sendFile.show_info("File sent!")
             else:
                 delivery_type = "ENCRYPTED_AND_SIGNED"
                 # check if private key file exit
                 isPrivateKeyFileExist = os.path.exists(private_key_path)
                 if isPrivateKeyFileExist == False:
-                    ui_sendFile.show_error("Private key file not found.")
+                    self._ui_sendFile.show_error("Private key file not found.")
                 else:
-                    encrypted_file = encrypt_file(file_path, receiver_public_key)
-                    signature = sign_encrypted_file(private_key_path, encrypted_file)
+                    encrypted_file = encrypt_file(
+                        file_path, receiver_public_key)
+                    signature = sign_encrypted_file(
+                        private_key_path, encrypted_file)
                     ### db ###########
                     # with open("file/encrypted_and_signed_file.bin", "wb") as fp:
                     #     fp.write(encrypted_file)
@@ -602,8 +665,7 @@ class Init:
 
                     signature_to_send = signature
 
-                    ui_sendFile.show_info("File sent!")
-                    window_sendFile.close()
+                    self._ui_sendFile.show_info("File sent!")
 
             msg = Message(
                 self._user.get_username(),
@@ -624,16 +686,17 @@ class Init:
             # delete file cache
             self._user_factory.delete_file(file_to_send)
 
-    def onTableSelectionChanged(self, selected, ui_checkMsg):
-        # rest message board when table selection changed
-        ui_checkMsg.text_Message.setPlainText("")
+            self.closeSendFile()
+
+    def onTableSelectionChanged(self):
+        selected = self._ui_checkMsg.tableWidget_Message.selectionModel().selection()
+        # reset message board when table selection changed
+        self._ui_checkMsg.text_Message.setPlainText("")
         selected_list = selected.indexes()
-        # sender = selected_list[0].text()
-        # timestamp = selected_list[2]
-        sender = ui_checkMsg.tableWidget_Message.item(
+        sender = self._ui_checkMsg.tableWidget_Message.item(
             selected_list[0].row(), selected_list[0].column()
         ).text()
-        timestamp = ui_checkMsg.tableWidget_Message.item(
+        timestamp = self._ui_checkMsg.tableWidget_Message.item(
             selected_list[2].row(), selected_list[2].column()
         ).text()
 
@@ -649,41 +712,39 @@ class Init:
 
         # enable and disable buttons according to delivery type
         if self._m_selected["delivery_type"] == "ENCRYPTED":
-            ui_checkMsg.pushButton_Decrypt.setEnabled(True)
-            ui_checkMsg.pushButton_Validate.setEnabled(False)
+            self._ui_checkMsg.pushButton_Decrypt.setEnabled(True)
+            self._ui_checkMsg.pushButton_Validate.setEnabled(False)
         elif self._m_selected["delivery_type"] == "SIGNED":
-            ui_checkMsg.pushButton_Decrypt.setEnabled(False)
-            ui_checkMsg.pushButton_Validate.setEnabled(True)
+            self._ui_checkMsg.pushButton_Decrypt.setEnabled(False)
+            self._ui_checkMsg.pushButton_Validate.setEnabled(True)
         elif self._m_selected["delivery_type"] == "ENCRYPTED_AND_SIGNED":
-            ui_checkMsg.pushButton_Decrypt.setEnabled(True)
-            ui_checkMsg.pushButton_Validate.setEnabled(True)
+            self._ui_checkMsg.pushButton_Decrypt.setEnabled(True)
+            self._ui_checkMsg.pushButton_Validate.setEnabled(True)
 
         # change label show and show the filename if message type is file
         if self._m_selected["message_type"] == "file":
-            f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
-            ui_checkMsg.text_Message.setPlainText(f_info["file_name"])
-            ui_checkMsg.label.setText("Filename")
+            f_info = self._user_factory.get_file_by_id(
+                self._m_selected["message"])
+            self._ui_checkMsg.text_Message.setPlainText(f_info["file_name"])
+            self._ui_checkMsg.label.setText("Filename")
         # show msg if type is msg
         else:
-            ui_checkMsg.label.setText("Message")
+            self._ui_checkMsg.label.setText("Message")
 
     def refreshCheckMsg(self):
-        print("ref checkmsg")
         # set remembered private key file path
         self._ui_checkMsg.label_Private_Key_Location.setText(
             self._user.get_private_key_location()
         )
 
         self._ui_checkMsg.label.setText("Message")
-        self._ui_checkMsg.pushButton_Decrypt.clicked.connect(
-            lambda: {self.decrypt(self._ui_checkMsg)}
-        )
-        self._ui_checkMsg.pushButton_Validate.clicked.connect(
-            lambda: {self.verify(self._ui_checkMsg)}
-        )
-        self._ui_checkMsg.pushButton_Download_The_File.clicked.connect(
-            lambda: {self.downloadFile(self._ui_checkMsg)}
-        )
+        # self._ui_checkMsg.pushButton_Decrypt.clicked.connect(
+        #     lambda: {self.decrypt()})
+        # self._ui_checkMsg.pushButton_Validate.clicked.connect(
+        #     lambda: {self.verify()})
+        # self._ui_checkMsg.pushButton_Download_The_File.clicked.connect(
+        #     lambda: {self.downloadFile()}
+        # )
         # init disable buttons
         self._ui_checkMsg.pushButton_Decrypt.setEnabled(False)
         self._ui_checkMsg.pushButton_Validate.setEnabled(False)
@@ -700,12 +761,7 @@ class Init:
         self._ui_checkMsg.tableWidget_Message.setRowCount(msg_count)
 
         self._ui_checkMsg.tableWidget_Message.selectionModel().selectionChanged.connect(
-            lambda: {
-                self.onTableSelectionChanged(
-                    self._ui_checkMsg.tableWidget_Message.selectionModel().selection(),
-                    self._ui_checkMsg,
-                )
-            }
+            lambda: {self.onTableSelectionChanged()}
         )
 
         # for loop in table
@@ -714,7 +770,8 @@ class Init:
             item = QtWidgets.QTableWidgetItem()
 
             # row header index
-            self._ui_checkMsg.tableWidget_Message.setVerticalHeaderItem(i, item)
+            self._ui_checkMsg.tableWidget_Message.setVerticalHeaderItem(
+                i, item)
             row_header_item = self._ui_checkMsg.tableWidget_Message.verticalHeaderItem(
                 i
             )
@@ -738,19 +795,10 @@ class Init:
                 i, 3, QTableWidgetItem(msg_list[i]["delivery_type"])
             )
 
-    def openCheckMsg(self):
-        # init data load
-        self.refreshCheckMsg()
-
-        # # refresher
-        # timer = QTimer()
-        # timer.timeout.connect(self.refreshCheckMsg())
-        # timer.start(3000)
-
-    def decrypt(self, ui_checkMsg):
+    def decrypt(self):
         # save private key path to db
         self._user_factory.update_private_key_location(
-            ui_checkMsg.label_Private_Key_Location.text(), self._user.get_username
+            self._ui_checkMsg.label_Private_Key_Location.text(), self._user.get_username
         )
 
         # if msg type is text
@@ -758,13 +806,14 @@ class Init:
             # decrypt msg
             decrypted_message = decrypt_message(
                 self._m_selected["message"],
-                ui_checkMsg.label_Private_Key_Location.text(),
+                self._ui_checkMsg.label_Private_Key_Location.text(),
             )
             # show decrypted msg
-            ui_checkMsg.text_Message.setPlainText(decrypted_message)
+            self._ui_checkMsg.text_Message.setPlainText(decrypted_message)
         # if msg type is file
         else:
-            f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
+            f_info = self._user_factory.get_file_by_id(
+                self._m_selected["message"])
             filename = f_info["file_name"]
 
             encrypted_file = f_info["file"]
@@ -775,14 +824,15 @@ class Init:
             decrypt_file(
                 encrypted_file,
                 "file_to_save.bin",
-                ui_checkMsg.label_Private_Key_Location.text(),
+                self._ui_checkMsg.label_Private_Key_Location.text(),
                 # get current user public key len
                 self._user.get_keypairs().get_length(),
             )
-            ui_checkMsg.pushButton_Download_The_File.setEnabled(True)
+            self._ui_checkMsg.pushButton_Download_The_File.setEnabled(True)
 
-    def downloadFile(self, ui_checkMsg):
-        response = QFileDialog.getExistingDirectory(None, caption="Select a folder")
+    def downloadFile(self):
+        response = QFileDialog.getExistingDirectory(
+            None, caption="Select a folder")
 
         f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
         filename = f_info["file_name"]
@@ -793,39 +843,41 @@ class Init:
         with open(response + "/" + filename, "wb") as fb:
             fb.write(file_save)
 
-        ui_checkMsg.show_info("File has been downloaded.")
+        self._ui_checkMsg.show_info("File has been downloaded.")
 
-    def verify(self, ui_checkMsg):
+    def verify(self):
         # save private key path to db
         self._user_factory.update_private_key_location(
-            ui_checkMsg.label_Private_Key_Location.text(), self._user.get_username
+            self._ui_checkMsg.label_Private_Key_Location.text(), self._user.get_username
         )
 
         if self._m_selected["delivery_type"] == "ENCRYPTED_AND_SIGNED":
             # if msg type is text
             if self._m_selected["message_type"] == "text":
-                print(
-                    "pv", self._user_factory.get_public_key(self._m_selected["sender"])
-                )
+                # print(
+                #     "pv", self._user_factory.get_public_key(self._m_selected["sender"])
+                # )
 
                 # whether verify msg successfully
                 signed_message_succ = verify_encryptedMessage(
                     self._m_selected["message"],
                     self._m_selected["signature"],
-                    self._user_factory.get_public_key(self._m_selected["sender"]),
+                    self._user_factory.get_public_key(
+                        self._m_selected["sender"]),
                 )
 
                 # # show msg
                 # ui_checkMsg.text_Message.setPlashowinText(self._m_selected["message"])
 
                 if signed_message_succ:
-                    ui_checkMsg.show_info("Verify Successful")
+                    self._ui_checkMsg.show_info("Verify Successful")
                 else:
-                    ui_checkMsg.show_info("Verify Failed")
+                    self._ui_checkMsg.show_info("Verify Failed")
 
             # if msg type is file
             else:
-                f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
+                f_info = self._user_factory.get_file_by_id(
+                    self._m_selected["message"])
                 filename = f_info["file_name"]
                 # with open("file/file_to_save.bin", "rb") as fp:
                 #     encrypted_file = fp.read()
@@ -835,15 +887,17 @@ class Init:
                 signed_file_succ = verify_encrypted_file(
                     self._m_selected["signature"],
                     encrypted_file,
-                    self._user_factory.get_public_key(self._m_selected["sender"]),
+                    self._user_factory.get_public_key(
+                        self._m_selected["sender"]),
                     self._user_factory.get_key_len(self._m_selected["sender"]),
                 )
 
                 if signed_file_succ:
-                    ui_checkMsg.show_info("Verify Successful")
-                    ui_checkMsg.pushButton_Download_The_File.setEnabled(True)
+                    self._ui_checkMsg.show_info("Verify Successful")
+                    self._ui_checkMsg.pushButton_Download_The_File.setEnabled(
+                        True)
                 else:
-                    ui_checkMsg.show_info("Verify Failed")
+                    self._ui_checkMsg.show_info("Verify Failed")
         else:
             # if msg type is text
             if self._m_selected["message_type"] == "text":
@@ -851,19 +905,22 @@ class Init:
                 signed_message_succ = verify_signature(
                     self._m_selected["message"],
                     self._m_selected["signature"],
-                    self._user_factory.get_public_key(self._m_selected["sender"]),
+                    self._user_factory.get_public_key(
+                        self._m_selected["sender"]),
                 )
                 # show msg
-                ui_checkMsg.text_Message.setPlainText(self._m_selected["message"])
+                self._ui_checkMsg.text_Message.setPlainText(
+                    self._m_selected["message"])
 
                 if signed_message_succ:
-                    ui_checkMsg.show_info("Verify Successful")
+                    self._ui_checkMsg.show_info("Verify Successful")
                 else:
-                    ui_checkMsg.show_info("Verify Failed")
+                    self._ui_checkMsg.show_info("Verify Failed")
 
             # if msg type is file
             else:
-                f_info = self._user_factory.get_file_by_id(self._m_selected["message"])
+                f_info = self._user_factory.get_file_by_id(
+                    self._m_selected["message"])
 
                 # decode the plain_file
                 plain_file = base64.b64decode(f_info["file"])
@@ -872,16 +929,18 @@ class Init:
                 signed_file_succ = verify_file(
                     self._m_selected["signature"],
                     plain_file,
-                    self._user_factory.get_public_key(self._m_selected["sender"]),
+                    self._user_factory.get_public_key(
+                        self._m_selected["sender"]),
                     # get sender's key len
                     self._user_factory.get_key_len(self._m_selected["sender"]),
                 )
 
                 if signed_file_succ:
-                    ui_checkMsg.show_info("Verify Successful")
+                    self._ui_checkMsg.show_info("Verify Successful")
                     # write file into file_to_save.bin
                     with open("file/file_to_save.bin", "wb") as fp:
                         fp.write(plain_file)
-                    ui_checkMsg.pushButton_Download_The_File.setEnabled(True)
+                    self._ui_checkMsg.pushButton_Download_The_File.setEnabled(
+                        True)
                 else:
-                    ui_checkMsg.show_info("Verify Failed")
+                    self._ui_checkMsg.show_info("Verify Failed")

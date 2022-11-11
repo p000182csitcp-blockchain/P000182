@@ -363,7 +363,7 @@ class UserFactory:
     # get the public key
     def get_public_key(self, username):
         result = self._users.find_one({"username": username})
-        print(result["user_id"], result["wallet_key"])
+        # print(result["user_id"], result["wallet_key"])
         return getPublicKeyFromBlockchain(result["user_id"], result["wallet_key"])
 
     # get the key len
