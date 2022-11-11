@@ -43,10 +43,6 @@ class User:
         self._private_key_location = "file/private_key.pem"
         self._userid = 0
 
-    # def __init__(self, username, password) -> None:
-    #     self._username = username
-    #     self._password = self.encodeByHash(password)
-
     def get_userid(self):
         return self._userid
 
